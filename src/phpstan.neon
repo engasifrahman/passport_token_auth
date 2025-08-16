@@ -1,0 +1,24 @@
+includes:
+  - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+  level: 5
+  paths:
+    - app
+
+  ignoreErrors:
+    - message: '#Call to an undefined method Laravel\\Passport\\Contracts\\ScopeAuthorizable::revoke\(\).#'
+    - message: '#^Trait Laravel\\Passport\\HasApiTokens requires using class to implement Laravel\\Passport\\Contracts\\OAuthenticatable, but App\\Models\\User does not\.$#'
+
+  # Core PHP rules
+  treatPhpDocTypesAsCertain: false #DEFAULT true
+
+  # Laravel spsecific rules
+  noModelMake: false #DEFAULT true
+  checkModelAppends: true #DEFAULT true
+  checkModelProperties: true #DEFAULT false
+  noEnvCallsOutsideOfConfig: true #DEFAULT true
+  noUnnecessaryCollectionCall: false #DEFAULT true
+  checkAuthCallsWhenInRequestScope: true #DEFAULT false
+  noUnnecessaryEnumerableToArrayCalls: false #DEFAULT false
+

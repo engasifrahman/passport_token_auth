@@ -1,0 +1,55 @@
+services:
+  app:
+    container_name: app
+    build:
+      args:
+        user: asif
+        uid: 1412
+      context: .
+      dockerfile: /docker/php-fpm/Dockerfile
+      target: base_php_fpm 
+    volumes:
+      - ./src:/var/www/
+      - ./src/.env.local:/var/www/.env
+      - app_supervisor_logs:/var/www/storage/logs/supervisor
+    ports:
+      - "8080:80"
+    env_file:
+      - ./src/.env.local
+    environment:
+      - APP_ENV=local
+    working_dir: /var/www/
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    environment:
+      - NGINX_HOST=app
+      - NGINX_PORT=9000
+    ports:
+      - "8000:80"
+    volumes:
+      - ./src:/var/www/
+      - ./docker/nginx/templates:/etc/nginx/templates
+      - ./docker/nginx/html:/usr/share/nginx/html
+    depends_on:
+      - app  
+    restart: unless-stopped
+  mysql:
+      image: mysql:8.0
+      container_name: mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: passport_token_auth
+        MYSQL_USER: asif
+        MYSQL_PASSWORD: asif
+      ports:
+        - "3307:3306"
+      volumes:
+        - mysql-data:/var/lib/mysql
+      restart: unless-stopped
+
+volumes:
+    mysql-data:
+    app_supervisor_logs:

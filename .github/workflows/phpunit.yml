@@ -1,0 +1,56 @@
+name: PHPUnit HTML Coverage Report
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  PHPUnit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # adjust as needed
+          extensions: mbstring, intl, sqlite, xdebug
+          coverage: xdebug
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: cd src && composer install --prefer-dist --no-progress
+
+        # Laravel requires an APP_KEY for encryption.
+        # This step creates a .env file if it doesn't exist and generates a key.
+      - name: Generate Application Key
+        run: |
+          cd src
+          cp .env.example .env || true
+          php artisan key:generate
+          php artisan passport:keys --no-interaction
+
+      - name: Run PHPUnit with HTML coverage
+        run: |
+          cd src
+          mkdir -p ../coverage-html
+          vendor/bin/phpunit \
+          --coverage-html ../coverage-html \
+          --coverage-text \
+          --show-uncovered-for-coverage-text
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-coverage-report
+          path: coverage-html/
